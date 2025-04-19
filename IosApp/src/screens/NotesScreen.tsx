@@ -16,6 +16,7 @@ type RootStackParamList = {
   Notes: { tag: string };
   Editor: { noteId?: string };
   Settings: undefined;
+  TagManagement: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -39,6 +40,11 @@ export const NotesScreen = () => {
       label: 'New Note',
       onPress: () => navigation.navigate('Editor', { noteId: undefined }),
       icon: 'add-circle-outline' as IconName,
+    },
+    {
+      label: 'Manage Tags',
+      onPress: () => navigation.navigate('TagManagement'),
+      icon: 'pricetags-outline' as IconName,
     },
     {
       label: 'Audio',

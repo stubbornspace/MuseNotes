@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ImageBackground, Dimensions, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ImageBackground, Dimensions, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, TextInput } from 'react-native';
 import { useNotes } from '../context/NotesContext';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,7 +12,6 @@ import * as Haptics from 'expo-haptics';
 import { useBackground } from '../context/BackgroundContext';
 import { useFontSize } from '../context/FontSizeContext';
 import { useAudio } from '../context/AudioContext';
-import { RichEditor, RichToolbar } from 'react-native-pell-rich-editor';
 import * as Clipboard from 'expo-clipboard';
 
 type RootStackParamList = {
@@ -20,6 +19,7 @@ type RootStackParamList = {
   Editor: { noteId?: string };
   Settings: undefined;
   Index: undefined;
+  TagManagement: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -35,8 +35,6 @@ export const EditorScreen = () => {
   const { fontSize } = useFontSize();
   const { isPlaying, togglePlayback } = useAudio();
   const globalStyles = createGlobalStyles(fontSize);
-  const editorRef = useRef<RichEditor>(null);
-  const [isEditorReady, setIsEditorReady] = useState(false);
 
   const [content, setContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -89,22 +87,9 @@ export const EditorScreen = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (editorRef.current) {
-      const editor = editorRef.current;
-      editor.getContentHtml().then(html => {
-        editor.setContentHTML(html);
-      });
-    }
-  }, [fontSize]);
-
   const handleTextChange = (text: string) => {
     setContent(text);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
-  const handleEditorReady = () => {
-    setIsEditorReady(true);
   };
 
   const handleSave = (title: string, tag: string) => {
@@ -150,6 +135,11 @@ export const EditorScreen = () => {
       icon: 'copy-outline' as IconName,
     },
     {
+      label: 'Manage Tags',
+      onPress: () => navigation.navigate('TagManagement'),
+      icon: 'pricetags-outline' as IconName,
+    },
+    {
       label: 'Home',
       onPress: () => navigation.navigate('Tags'),
       icon: 'home-outline' as IconName,
@@ -193,36 +183,20 @@ export const EditorScreen = () => {
             { maxHeight: orientation === 'portrait' ? 600 - keyboardHeight : 900 - keyboardHeight },
             { maxWidth: orientation === 'portrait' ? 960 : 800 }
           ]}>
-            <View style={styles.toolbarWrapper}>
-              <RichToolbar
-                editor={editorRef}
-                iconTint="#FFFFFF"
-                selectedIconTint="#FFFFFF"
-                actions={[
-                  'bold',
-                  'italic',
-                  'underline',
-                  'justifyLeft',
-                  'justifyCenter',
-                  'unorderedList',
-                  'orderedList',
-                  'link',
-                ]}
-                style={styles.toolbar}
-              />
-            </View>
-
-            <RichEditor
-              ref={editorRef}
-              initialContentHTML={content}
-              onChange={handleTextChange}
-              onLoadEnd={handleEditorReady}
+            <TextInput
+              style={[
+                styles.textInput,
+                { fontSize: fontSize + 2 }
+              ]}
+              value={content}
+              onChangeText={handleTextChange}
               placeholder="Start writing..."
-              editorStyle={{
-                backgroundColor: 'transparent',
-                color: '#FFFFFF',
-                cssText: `body { font-size: ${fontSize + 2}px; }`,
-              }}
+              placeholderTextColor="#666666"
+              multiline
+              autoCorrect
+              spellCheck
+              autoCapitalize="sentences"
+              textAlignVertical="top"
             />
           </View>
         </View>
@@ -258,14 +232,11 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     borderRadius: 1,
   },
-  toolbarWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  toolbar: {
+  textInput: {
+    flex: 1,
+    color: '#FFFFFF',
     backgroundColor: 'transparent',
-    borderTopWidth: 0,
-    flex: 1
+    padding: 10,
+    textAlign: 'left',
   }
 }); 

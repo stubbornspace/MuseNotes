@@ -9,6 +9,7 @@ import { TagsScreen } from './src/screens/TagsScreen';
 import { NotesScreen } from './src/screens/NotesScreen';
 import { EditorScreen } from './src/screens/EditorScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { TagManagementScreen } from './src/screens/TagManagementScreen';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet } from 'react-native';
 
@@ -31,6 +32,7 @@ const AppContent = () => {
               <Stack.Screen name="Notes" component={NotesScreen} />
               <Stack.Screen name="Editor" component={EditorScreen} />
               <Stack.Screen name="Settings" component={SettingsScreen} />
+              <Stack.Screen name="TagManagement" component={TagManagementScreen} />
             </Stack.Navigator>
           </View>
         </View>

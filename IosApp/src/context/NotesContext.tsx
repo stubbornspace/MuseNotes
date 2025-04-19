@@ -1,13 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Note } from '../types/note';
 
-interface NotesContextType {
+export type Note = {
+  id: string;
+  title: string;
+  content: string;
+  tag: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type NotesContextType = {
   notes: Note[];
   addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateNote: (id: string, note: Partial<Note>) => void;
   deleteNote: (id: string) => void;
-}
+  updateTag: (oldTag: string, newTag: string) => void;
+  deleteTag: (tag: string) => void;
+};
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
@@ -29,44 +39,68 @@ export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const saveNotes = async (updatedNotes: Note[]) => {
+  const saveNotes = async (newNotes: Note[]) => {
     try {
-      await AsyncStorage.setItem('notes', JSON.stringify(updatedNotes));
+      await AsyncStorage.setItem('notes', JSON.stringify(newNotes));
+      setNotes(newNotes);
     } catch (error) {
       console.error('Error saving notes:', error);
     }
   };
 
-  const addNote = (noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addNote = (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newNote: Note = {
-      ...noteData,
+      ...note,
       id: Date.now().toString(),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
-    const updatedNotes = [...notes, newNote];
-    setNotes(updatedNotes);
-    saveNotes(updatedNotes);
+    saveNotes([...notes, newNote]);
   };
 
-  const updateNote = (id: string, noteData: Partial<Note>) => {
-    const updatedNotes = notes.map(note => 
-      note.id === id 
-        ? { ...note, ...noteData, updatedAt: Date.now() }
-        : note
+  const updateNote = (id: string, note: Partial<Note>) => {
+    const updatedNotes = notes.map((n) =>
+      n.id === id
+        ? { ...n, ...note, updatedAt: new Date().toISOString() }
+        : n
     );
-    setNotes(updatedNotes);
     saveNotes(updatedNotes);
   };
 
   const deleteNote = (id: string) => {
-    const updatedNotes = notes.filter(note => note.id !== id);
-    setNotes(updatedNotes);
+    const updatedNotes = notes.filter((n) => n.id !== id);
+    saveNotes(updatedNotes);
+  };
+
+  const updateTag = (oldTag: string, newTag: string) => {
+    const updatedNotes = notes.map((note) =>
+      note.tag === oldTag
+        ? { ...note, tag: newTag, updatedAt: new Date().toISOString() }
+        : note
+    );
+    saveNotes(updatedNotes);
+  };
+
+  const deleteTag = (tag: string) => {
+    const updatedNotes = notes.map((note) =>
+      note.tag === tag
+        ? { ...note, tag: '', updatedAt: new Date().toISOString() }
+        : note
+    );
     saveNotes(updatedNotes);
   };
 
   return (
-    <NotesContext.Provider value={{ notes, addNote, updateNote, deleteNote }}>
+    <NotesContext.Provider
+      value={{
+        notes,
+        addNote,
+        updateNote,
+        deleteNote,
+        updateTag,
+        deleteTag,
+      }}
+    >
       {children}
     </NotesContext.Provider>
   );
