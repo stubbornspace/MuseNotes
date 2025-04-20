@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, StyleSheet, Modal, Animated, View, Text } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { createGlobalStyles } from '../styles/globalStyles';
 import { useFontSize } from '../context/FontSizeContext';
@@ -9,7 +10,7 @@ export const MusicButton: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [animation] = useState(new Animated.Value(0));
   const { fontSize } = useFontSize();
-  const { isPlaying, currentTrack, togglePlayback, availableTracks } = useAudio();
+  const { isPlaying, currentTrack, volume, togglePlayback, setVolume, availableTracks } = useAudio();
   const globalStyles = createGlobalStyles(fontSize);
 
   const toggleMenu = () => {
@@ -83,6 +84,20 @@ export const MusicButton: React.FC = () => {
                 </Text>
               </TouchableOpacity>
             ))}
+            <View style={styles.volumeContainer}>
+              <Ionicons name="volume-low" size={20} color="#FFFFFF" style={styles.volumeIcon} />
+              <Slider
+                style={styles.volumeSlider}
+                minimumValue={0}
+                maximumValue={1}
+                value={volume}
+                onValueChange={setVolume}
+                minimumTrackTintColor="#FFFFFF"
+                maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
+                thumbTintColor="#FFFFFF"
+              />
+              <Ionicons name="volume-high" size={20} color="#FFFFFF" style={styles.volumeIcon} />
+            </View>
           </Animated.View>
         </TouchableOpacity>
       </Modal>
@@ -114,6 +129,23 @@ const styles = StyleSheet.create({
     bottom: 80,
     right: 20,
     alignItems: 'flex-end',
+  },
+  volumeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(50, 50, 50, 0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 10,
+    minWidth: 200,
+  },
+  volumeIcon: {
+    marginHorizontal: 8,
+  },
+  volumeSlider: {
+    flex: 1,
+    height: 40,
   },
   trackButton: {
     flexDirection: 'row',

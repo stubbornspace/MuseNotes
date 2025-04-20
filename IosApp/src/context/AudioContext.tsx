@@ -4,7 +4,9 @@ import { Audio } from 'expo-av';
 interface AudioContextType {
   isPlaying: boolean;
   currentTrack: string | null;
+  volume: number;
   togglePlayback: (trackName?: string) => Promise<void>;
+  setVolume: (volume: number) => Promise<void>;
   availableTracks: { name: string; file: any }[];
 }
 
@@ -14,6 +16,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
+  const [volume, setVolumeState] = useState(0.5); // Default volume at 50%
 
   const availableTracks = [
     { name: 'Stars', file: require('../../assets/audio/stars.m4a') },
@@ -29,6 +32,17 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     };
   }, [sound]);
+
+  const setVolume = async (newVolume: number) => {
+    try {
+      setVolumeState(newVolume);
+      if (sound) {
+        await sound.setVolumeAsync(newVolume);
+      }
+    } catch (error) {
+      console.error('Error setting volume:', error);
+    }
+  };
 
   const togglePlayback = async (trackName?: string) => {
     try {
@@ -50,7 +64,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (selectedTrack) {
           const { sound: newSound } = await Audio.Sound.createAsync(
             selectedTrack.file,
-            { shouldPlay: true }
+            { 
+              shouldPlay: true,
+              volume: volume
+            }
           );
           setSound(newSound);
           setCurrentTrack(trackName);
@@ -74,7 +91,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <AudioContext.Provider value={{ isPlaying, currentTrack, togglePlayback, availableTracks }}>
+    <AudioContext.Provider value={{ isPlaying, currentTrack, volume, togglePlayback, setVolume, availableTracks }}>
       {children}
     </AudioContext.Provider>
   );
