@@ -47,11 +47,6 @@ export const NotesScreen = () => {
       icon: 'pricetags-outline' as IconName,
     },
     {
-      label: 'Audio',
-      onPress: togglePlayback,
-      icon: isPlaying ? 'pause-circle-outline' : 'play-circle-outline' as IconName,
-    },
-    {
       label: 'Settings',
       onPress: () => navigation.navigate('Settings'),
       icon: 'settings-outline' as IconName,

@@ -44,6 +44,7 @@ export const EditorScreen = () => {
     Dimensions.get('window').width < Dimensions.get('window').height ? 'portrait' : 'landscape'
   );
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [title, setTitle] = useState('');
 
   useEffect(() => {
     if (noteId) {
@@ -52,6 +53,7 @@ export const EditorScreen = () => {
         setContent(note.content || '');
         setCurrentNote(note);
         setIsEditing(true);
+        setTitle(note.title || '');
       }
     }
   }, [noteId, notes]);
@@ -92,11 +94,11 @@ export const EditorScreen = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const handleSave = (title: string, tag: string) => {
+  const handleSave = (newTitle: string, tag: string) => {
     if (isEditing && noteId) {
-      updateNote(noteId, { title, content, tag });
+      updateNote(noteId, { title: newTitle, content, tag });
     } else {
-      addNote({ title, content, tag });
+      addNote({ title: newTitle, content, tag });
     }
     setIsSaveModalVisible(false);
     navigation.goBack();
@@ -145,11 +147,6 @@ export const EditorScreen = () => {
       icon: 'home-outline' as IconName,
     },
     {
-      label: 'Audio',
-      onPress: togglePlayback,
-      icon: isPlaying ? 'pause-circle-outline' : 'play-circle-outline' as IconName,
-    },
-    {
       label: 'Settings',
       onPress: () => navigation.navigate('Settings'),
       icon: 'settings-outline' as IconName,
@@ -161,44 +158,50 @@ export const EditorScreen = () => {
       source={backgroundImage}
       style={globalStyles.container}
     >
+      <TouchableOpacity
+        style={globalStyles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <View style={globalStyles.backButtonCircle}>
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+        </View>
+      </TouchableOpacity>
+
+      <MenuButton actions={menuActions} />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        style={styles.container}
       >
-        <TouchableOpacity 
-          style={globalStyles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <View style={globalStyles.backButtonCircle}>
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-          </View>
-        </TouchableOpacity>
-
-        <MenuButton actions={menuActions} />
-
-        <View style={styles.editorWrapper}>
-          <View style={[
-            styles.editorContainer,
-            { maxHeight: orientation === 'portrait' ? 600 - keyboardHeight : 900 - keyboardHeight },
-            { maxWidth: orientation === 'portrait' ? 960 : 800 }
-          ]}>
-            <TextInput
-              style={[
-                styles.textInput,
-                { fontSize: fontSize + 2 }
-              ]}
-              value={content}
-              onChangeText={handleTextChange}
-              placeholder="Start writing..."
-              placeholderTextColor="#666666"
-              multiline
-              autoCorrect
-              spellCheck
-              autoCapitalize="sentences"
-              textAlignVertical="top"
-            />
-          </View>
+        <View style={styles.titleContainer}>
+          <TextInput
+            style={[styles.titleInput, { fontSize: fontSize + 4 }]}
+            placeholder="Title"
+            placeholderTextColor="#666666"
+            value={title}
+            onChangeText={setTitle}
+          />
+        </View>
+        <View style={[
+          styles.editorContainer,
+          { maxHeight: orientation === 'portrait' ? 600 - keyboardHeight : 900 - keyboardHeight },
+          { maxWidth: orientation === 'portrait' ? 960 : 800 }
+        ]}>
+          <TextInput
+            style={[
+              styles.textInput,
+              { fontSize }
+            ]}
+            value={content}
+            onChangeText={handleTextChange}
+            placeholder="Start writing..."
+            placeholderTextColor="#666666"
+            multiline
+            autoCorrect
+            spellCheck
+            autoCapitalize="sentences"
+            textAlignVertical="top"
+          />
         </View>
       </KeyboardAvoidingView>
 
@@ -206,7 +209,7 @@ export const EditorScreen = () => {
         visible={isSaveModalVisible}
         onSave={handleSave}
         onCancel={() => setIsSaveModalVisible(false)}
-        initialTitle={currentNote?.title}
+        initialTitle={title}
         initialTag={currentNote?.tag}
       />
     </ImageBackground>
@@ -214,17 +217,26 @@ export const EditorScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
+  container: {
     flex: 1,
-  },
-  editorWrapper: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',    
     marginTop: 100,
+    alignItems: 'center',
+  },
+  titleContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    width: '100%',
+    maxWidth: 800,
+  },
+  titleInput: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   editorContainer: {
     width: '100%',
+    maxWidth: 800,
     height: '100%',
     overflow: 'hidden',
     backgroundColor: 'transparent',

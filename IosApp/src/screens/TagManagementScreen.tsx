@@ -37,11 +37,6 @@ export const TagManagementScreen = () => {
 
   const menuActions = [
     {
-      label: 'Audio',
-      onPress: togglePlayback,
-      icon: isPlaying ? 'pause-circle-outline' : 'play-circle-outline' as IconName,
-    },
-    {
       label: 'Settings',
       onPress: () => navigation.navigate('Settings'),
       icon: 'settings-outline' as IconName,
@@ -103,7 +98,6 @@ export const TagManagementScreen = () => {
     <View style={styles.tagItem}>
       <View style={styles.tagContent}>
         <View style={styles.tagTextContainer}>
-          <Ionicons name="add-circle" size={20} color="#FFFFFF" style={styles.icon} />
           <TextInput
             style={[styles.tagInput, { fontSize }]}
             placeholder="Add new tag..."
@@ -117,7 +111,7 @@ export const TagManagementScreen = () => {
           style={styles.addButton}
           onPress={handleAddTag}
         >
-          <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+          <Ionicons name="add" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -162,7 +156,7 @@ export const TagManagementScreen = () => {
                     style={styles.noteCountButton}
                   >
                     <Text style={[styles.noteCount, { fontSize: fontSize * 0.8 }]}>
-                      • {noteCount} {noteCount === 1 ? 'note' : 'notes'}
+                      {noteCount}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -259,12 +253,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  noteCount: {
+    color: '#4A90E2',
+    marginLeft: 8,
+    textDecorationLine: 'underline',
+  },
   noteCountButton: {
     paddingVertical: 4,
     paddingHorizontal: 8,
-  },
-  noteCount: {
-    color: '#AAAAAA',
-    marginLeft: 8,
   },
 }); 

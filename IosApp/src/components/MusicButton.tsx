@@ -1,30 +1,102 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { TouchableOpacity, StyleSheet, Modal, Animated, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createGlobalStyles } from '../styles/globalStyles';
-import { useAudio } from '../context/AudioContext';
 import { useFontSize } from '../context/FontSizeContext';
+import { useAudio } from '../context/AudioContext';
 
 export const MusicButton: React.FC = () => {
-  const { isPlaying, togglePlayback } = useAudio();
+  const [isVisible, setIsVisible] = useState(false);
+  const [animation] = useState(new Animated.Value(0));
   const { fontSize } = useFontSize();
+  const { isPlaying, currentTrack, togglePlayback, availableTracks } = useAudio();
   const globalStyles = createGlobalStyles(fontSize);
 
+  const toggleMenu = () => {
+    const toValue = isVisible ? 0 : 1;
+    Animated.spring(animation, {
+      toValue,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 40,
+    }).start();
+    setIsVisible(!isVisible);
+  };
+
+  const translateY = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-20, 0],
+  });
+
+  const opacity = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
   return (
-    <TouchableOpacity 
-      style={[globalStyles.button, styles.musicButton]} 
-      onPress={togglePlayback}
-    >
-      <Ionicons 
-        name={isPlaying ? 'pause-circle-outline' : 'play-circle-outline'} 
-        size={24} 
-        color="#FFFFFF" 
-      />
-    </TouchableOpacity>
+    <View style={styles.container}>
+      <TouchableOpacity 
+        style={[globalStyles.button, styles.musicButton]} 
+        onPress={toggleMenu}
+      >
+        <Ionicons 
+          name={isPlaying ? 'musical-notes' : 'musical-notes-outline'} 
+          size={24} 
+          color="#FFFFFF" 
+        />
+      </TouchableOpacity>
+
+      <Modal
+        visible={isVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={toggleMenu}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={toggleMenu}
+        >
+          <Animated.View 
+            style={[
+              styles.menuContainer,
+              { transform: [{ translateY }], opacity }
+            ]}
+          >
+            {availableTracks.map((track, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[globalStyles.button, styles.trackButton]}
+                onPress={() => {
+                  togglePlayback(track.name);
+                  toggleMenu();
+                }}
+              >
+                <Ionicons 
+                  name={currentTrack === track.name && isPlaying ? 'pause' : 'play'} 
+                  size={20} 
+                  color="#FFFFFF" 
+                  style={styles.trackIcon}
+                />
+                <Text style={styles.trackName}>
+                  {track.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    zIndex: 1000,
+  },
   musicButton: {
     width: 40,
     height: 40,
@@ -32,9 +104,32 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(50, 50, 50, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  menuContainer: {
     position: 'absolute',
-    bottom: 30,
-    right: 30,
-    zIndex: 1000,
+    bottom: 80,
+    right: 20,
+    alignItems: 'flex-end',
+  },
+  trackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(50, 50, 50, 0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 10,
+    minWidth: 120,
+  },
+  trackIcon: {
+    marginRight: 8,
+  },
+  trackName: {
+    color: '#FFFFFF',
+    fontSize: 16,
   },
 }); 

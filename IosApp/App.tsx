@@ -12,8 +12,18 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { TagManagementScreen } from './src/screens/TagManagementScreen';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet } from 'react-native';
+import { MusicButton } from './src/components/MusicButton';
+import { useNavigationState } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator();
+
+const MusicButtonWrapper = () => {
+  const navigationState = useNavigationState(state => state);
+  const currentRoute = navigationState?.routes[navigationState?.index]?.name;
+  const shouldShowMusicButton = currentRoute !== 'Settings';
+
+  return shouldShowMusicButton ? <MusicButton /> : null;
+};
 
 const AppContent = () => {
   return (
@@ -34,6 +44,7 @@ const AppContent = () => {
               <Stack.Screen name="Settings" component={SettingsScreen} />
               <Stack.Screen name="TagManagement" component={TagManagementScreen} />
             </Stack.Navigator>
+            <MusicButtonWrapper />
           </View>
         </View>
       </NavigationContainer>
